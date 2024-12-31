@@ -1,5 +1,6 @@
 # cp _env .env
 
+VITE_BACKEND_BASE_URL=
 # {"apiKey":"...","authDomain":"...",...}
 VITE_FIREBASE_CONFIG_JSON=
 VITE_VAPID_KEY=

@@ -12,24 +12,50 @@ initializeApp(firebaseConfig);
 const vapidKey = import.meta.env.VITE_VAPID_KEY;
 if (vapidKey === undefined) throw new Error("env VITE_VAPID_KEY not found");
 
+const backendBaseUrl = import.meta.env.VITE_BACKEND_BASE_URL;
+if (backendBaseUrl === undefined) throw new Error("env VITE_BACKEND_BASE_URL not found");
+
+const baseUrl = import.meta.env.BASE_URL;
+if (baseUrl === undefined) throw new Error("env BASE_URL not found");
+if (baseUrl === '/') throw new Error("env BASE_URL is invalid");
+
 function getNotificationPermission(): NotificationPermission | null {
 	if (!("Notification" in window)) return null;
 	return Notification.permission;
 }
 
-type TokenWithExpiration = {
-	expiresAt: Date;
-	token: string;
-};
-
-async function getTokenWithExpiration(): Promise<TokenWithExpiration> {
+async function registerServiceWorkerAndGetToken(): Promise<string> {
 	const messaging = getMessaging();
-	const token = await getToken(messaging, { vapidKey });
-	const msPerDay = 60 * 60 * 24 * 1000;
-	return {
-		expiresAt: new Date(new Date().getTime() + 30 * msPerDay),
-		token,
-	};
+
+	// register service worker
+	if (!("serviceWorker" in navigator)) {
+		throw new Error("serviceWorker not supported");
+	}
+	const serviceWorkerRegistration = await navigator.serviceWorker.register(
+		`${baseUrl}/firebase-messaging-sw.js`,
+	);
+	await serviceWorkerRegistration.update().catch(() => {
+		// ignore error
+	});
+
+	const token = await getToken(messaging, {
+		serviceWorkerRegistration,
+		vapidKey,
+	});
+
+	// register token
+	const response = await fetch(`${backendBaseUrl}/tokens`, {
+		body: JSON.stringify({ token }),
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		method: "POST",
+	});
+	if (((response.status / 100) | 0) !== 2) {
+		throw new Error("token registration failed");
+	}
+
+	return token;
 }
 
 async function writeClipboardText(s: string): Promise<void> {
@@ -37,7 +63,7 @@ async function writeClipboardText(s: string): Promise<void> {
 }
 
 function App() {
-	const [token, setToken] = useState<TokenWithExpiration | null>(null);
+	const [token, setToken] = useState<string | null>(null);
 	const [permission, setPermission] = useState<NotificationPermission | null>(
 		getNotificationPermission,
 	);
@@ -45,7 +71,7 @@ function App() {
 		startTransition(async () => {
 			try {
 				if (token === null) return;
-				await writeClipboardText(token.token);
+				await writeClipboardText(token);
 			} catch (e) {
 				console.error(e);
 			}
@@ -55,7 +81,7 @@ function App() {
 	const onClickGetTokenButton = useCallback((): void => {
 		startTransition(async () => {
 			try {
-				const token = await getTokenWithExpiration();
+				const token = await registerServiceWorkerAndGetToken();
 				setToken(token);
 				setPermission(getNotificationPermission());
 			} catch (e) {
@@ -106,11 +132,10 @@ function App() {
 					<div>
 						{token !== null ? (
 							<div>
-								<input type="text" value={token.token} />
+								<input type="text" value={token} />
 								<button onClick={onClickCopyButton} type="button">
 									コピー
 								</button>
-								<div>expires at: {token.expiresAt.toISOString()}</div>
 							</div>
 						) : (
 							<div>(none)</div>
