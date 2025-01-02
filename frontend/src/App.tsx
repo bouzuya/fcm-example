@@ -13,18 +13,22 @@ const vapidKey = import.meta.env.VITE_VAPID_KEY;
 if (vapidKey === undefined) throw new Error("env VITE_VAPID_KEY not found");
 
 const backendBaseUrl = import.meta.env.VITE_BACKEND_BASE_URL;
-if (backendBaseUrl === undefined) throw new Error("env VITE_BACKEND_BASE_URL not found");
+if (backendBaseUrl === undefined)
+	throw new Error("env VITE_BACKEND_BASE_URL not found");
 
 const baseUrl = import.meta.env.BASE_URL;
 if (baseUrl === undefined) throw new Error("env BASE_URL not found");
-if (baseUrl === '/') throw new Error("env BASE_URL is invalid");
+if (baseUrl === "/") throw new Error("env BASE_URL is invalid");
 
 function getNotificationPermission(): NotificationPermission | null {
 	if (!("Notification" in window)) return null;
 	return Notification.permission;
 }
 
-async function registerServiceWorkerAndGetToken(): Promise<string> {
+async function registerServiceWorkerAndGetToken(): Promise<{
+	id: string;
+	token: string;
+}> {
 	const messaging = getMessaging();
 
 	// register service worker
@@ -47,15 +51,31 @@ async function registerServiceWorkerAndGetToken(): Promise<string> {
 	const response = await fetch(`${backendBaseUrl}/tokens`, {
 		body: JSON.stringify({ token }),
 		headers: {
-			'Content-Type': 'application/json'
+			"Content-Type": "application/json",
 		},
 		method: "POST",
 	});
 	if (((response.status / 100) | 0) !== 2) {
 		throw new Error("token registration failed");
 	}
+	const { id } = await response.json();
 
-	return token;
+	return { id, token };
+}
+
+async function sendTestNotification(tokenId: string): Promise<void> {
+	const response = await fetch(
+		`${backendBaseUrl}/tokens/${tokenId}/notifications`,
+		{
+			headers: {
+				"Content-Type": "application/json",
+			},
+			method: "POST",
+		},
+	);
+	if (((response.status / 100) | 0) !== 2) {
+		throw new Error("test notification sending failed");
+	}
 }
 
 async function writeClipboardText(s: string): Promise<void> {
@@ -63,7 +83,9 @@ async function writeClipboardText(s: string): Promise<void> {
 }
 
 function App() {
-	const [token, setToken] = useState<string | null>(null);
+	const [token, setToken] = useState<{ id: string; token: string } | null>(
+		null,
+	);
 	const [permission, setPermission] = useState<NotificationPermission | null>(
 		getNotificationPermission,
 	);
@@ -71,7 +93,7 @@ function App() {
 		startTransition(async () => {
 			try {
 				if (token === null) return;
-				await writeClipboardText(token);
+				await writeClipboardText(token.token);
 			} catch (e) {
 				console.error(e);
 			}
@@ -99,7 +121,12 @@ function App() {
 			}
 		});
 	}, []);
-	// TODO: fetch token from server
+	const onClickTestButton = useCallback((): void => {
+		startTransition(async () => {
+			if (token === null) return;
+			await sendTestNotification(token.id);
+		});
+	}, [token]);
 
 	return (
 		<div className="card">
@@ -132,9 +159,13 @@ function App() {
 					<div>
 						{token !== null ? (
 							<div>
-								<input type="text" value={token} />
+								<input readOnly={true} type="text" value={token.token} />
 								<button onClick={onClickCopyButton} type="button">
 									コピー
+								</button>
+								<br />
+								<button onClick={onClickTestButton} type="button">
+									テスト通知
 								</button>
 							</div>
 						) : (

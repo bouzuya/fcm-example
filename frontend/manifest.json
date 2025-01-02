@@ -1,19 +1,19 @@
 {
-  "background_color": "#4e6a41",
-  "display": "standalone",
-  "icons": [
-    {
-      "size": "100x100",
-      "src": "https://bouzuya.net/images/favicon.png",
-      "type": "image/png"
-    },
-    {
-      "size": "600x600",
-      "src": "https://bouzuya.net/images/bouzuya-icon-v3.png",
-      "type": "image/png"
-    }
-  ],
-  "name": "fcm example",
-  "short_name": "fcm",
-  "start_url": "https://bouzuya.net/lab/fcm/"
+	"background_color": "#4e6a41",
+	"display": "standalone",
+	"icons": [
+		{
+			"size": "100x100",
+			"src": "https://bouzuya.net/images/favicon.png",
+			"type": "image/png"
+		},
+		{
+			"size": "600x600",
+			"src": "https://bouzuya.net/images/bouzuya-icon-v3.png",
+			"type": "image/png"
+		}
+	],
+	"name": "fcm example",
+	"short_name": "fcm",
+	"start_url": "https://bouzuya.net/lab/fcm/"
 }
