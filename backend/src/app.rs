@@ -6,7 +6,7 @@ use anyhow::Context as _;
 use fcm_send::FcmClient;
 use tokio::sync::Mutex;
 
-use crate::services::{CreateTokenService, DeleteTokenService};
+use crate::services::{CreateNotificationService, CreateTokenService, DeleteTokenService};
 
 #[derive(Clone, Debug)]
 pub struct Token {
@@ -77,6 +77,19 @@ impl App {
     pub async fn list_tokens(&self) -> anyhow::Result<Vec<Token>> {
         let tokens = self.tokens.lock().await;
         Ok(tokens.values().cloned().collect::<Vec<Token>>())
+    }
+}
+
+#[axum::async_trait]
+impl CreateNotificationService for App {
+    #[tracing::instrument(err(Debug), ret(level = tracing::Level::DEBUG), skip(self))]
+    async fn create_test_notification(&self, token_id: String) -> anyhow::Result<()> {
+        self.create_notification(
+            vec![token_id],
+            "テスト通知です".to_owned(),
+            "https://bouzuya.net/".to_owned(),
+        )
+        .await
     }
 }
 

@@ -1,6 +1,7 @@
 mod admin_notifications;
 mod admin_tokens;
 mod assets;
+mod notifications;
 mod tokens;
 
 use crate::app::App;
@@ -10,6 +11,7 @@ pub fn route() -> axum::Router<App> {
         .merge(admin_notifications::route())
         .merge(admin_tokens::route())
         .merge(assets::route())
+        .merge(notifications::route())
         .merge(tokens::route())
 }
 
