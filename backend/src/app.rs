@@ -6,6 +6,8 @@ use anyhow::Context as _;
 use fcm_send::FcmClient;
 use tokio::sync::Mutex;
 
+use crate::services::{CreateTokenService, DeleteTokenService};
+
 #[derive(Clone, Debug)]
 pub struct Token {
     pub created_at: u64,
@@ -67,8 +69,21 @@ impl App {
         Ok(())
     }
 
+    pub fn is_admin(&self, secret: &str) -> bool {
+        self.secret == secret
+    }
+
     #[tracing::instrument(err(Debug), ret(level = tracing::Level::DEBUG), skip(self))]
-    pub async fn create_token(&self, token: String) -> anyhow::Result<String> {
+    pub async fn list_tokens(&self) -> anyhow::Result<Vec<Token>> {
+        let tokens = self.tokens.lock().await;
+        Ok(tokens.values().cloned().collect::<Vec<Token>>())
+    }
+}
+
+#[axum::async_trait]
+impl CreateTokenService for App {
+    #[tracing::instrument(err(Debug), ret(level = tracing::Level::DEBUG), skip(self))]
+    async fn create_token(&self, token: String) -> anyhow::Result<String> {
         let mut tokens = self.tokens.lock().await;
 
         let id = {
@@ -88,21 +103,14 @@ impl App {
         });
         Ok(id)
     }
+}
 
+#[axum::async_trait]
+impl DeleteTokenService for App {
     #[tracing::instrument(err(Debug), ret(level = tracing::Level::DEBUG), skip(self))]
-    pub async fn delete_token(&self, token_id: String) -> anyhow::Result<()> {
+    async fn delete_token(&self, token_id: String) -> anyhow::Result<()> {
         let mut tokens = self.tokens.lock().await;
         tokens.remove(&token_id);
         Ok(())
-    }
-
-    pub fn is_admin(&self, secret: &str) -> bool {
-        self.secret == secret
-    }
-
-    #[tracing::instrument(err(Debug), ret(level = tracing::Level::DEBUG), skip(self))]
-    pub async fn list_tokens(&self) -> anyhow::Result<Vec<Token>> {
-        let tokens = self.tokens.lock().await;
-        Ok(tokens.values().cloned().collect::<Vec<Token>>())
     }
 }
