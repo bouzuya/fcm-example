@@ -80,7 +80,7 @@ impl App {
     }
 }
 
-#[axum::async_trait]
+#[async_trait::async_trait]
 impl CreateNotificationService for App {
     #[tracing::instrument(err(Debug), ret(level = tracing::Level::DEBUG), skip(self))]
     async fn create_test_notification(&self, token_id: String) -> anyhow::Result<()> {
@@ -93,7 +93,7 @@ impl CreateNotificationService for App {
     }
 }
 
-#[axum::async_trait]
+#[async_trait::async_trait]
 impl CreateTokenService for App {
     #[tracing::instrument(err(Debug), ret(level = tracing::Level::DEBUG), skip(self))]
     async fn create_token(&self, token: String) -> anyhow::Result<String> {
@@ -118,7 +118,7 @@ impl CreateTokenService for App {
     }
 }
 
-#[axum::async_trait]
+#[async_trait::async_trait]
 impl DeleteTokenService for App {
     #[tracing::instrument(err(Debug), ret(level = tracing::Level::DEBUG), skip(self))]
     async fn delete_token(&self, token_id: String) -> anyhow::Result<()> {

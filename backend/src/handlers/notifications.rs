@@ -23,7 +23,7 @@ async fn create<T: CreateNotificationService>(
 
 pub fn route<T: Clone + CreateNotificationService + Send + Sync + 'static>() -> Router<T> {
     Router::new().route(
-        "/tokens/:token_id/notifications",
+        "/tokens/{token_id}/notifications",
         routing::post(create::<T>),
     )
 }
@@ -37,7 +37,7 @@ mod tests {
     #[derive(Clone)]
     struct MockApp;
 
-    #[axum::async_trait]
+    #[async_trait::async_trait]
     impl CreateNotificationService for MockApp {
         async fn create_test_notification(&self, _token_id: String) -> anyhow::Result<()> {
             Ok(())

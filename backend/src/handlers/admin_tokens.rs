@@ -8,7 +8,6 @@ use crate::app::{App, Token};
 
 pub struct AdminAuth;
 
-#[axum::async_trait]
 impl FromRequestParts<App> for AdminAuth {
     type Rejection = StatusCode;
 

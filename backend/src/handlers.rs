@@ -17,13 +17,13 @@ pub fn route() -> axum::Router<App> {
 
 #[cfg(test)]
 mod tests {
-    #[axum::async_trait]
+    #[async_trait::async_trait]
     pub(crate) trait ResponseExt {
         async fn into_body_string(self) -> anyhow::Result<String>;
         async fn into_body_as_json<T: serde::de::DeserializeOwned>(self) -> anyhow::Result<T>;
     }
 
-    #[axum::async_trait]
+    #[async_trait::async_trait]
     impl ResponseExt for axum::http::Response<axum::body::Body> {
         async fn into_body_string(self) -> anyhow::Result<String> {
             let body = axum::body::to_bytes(self.into_body(), usize::MAX).await?;

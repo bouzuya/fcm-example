@@ -5,7 +5,8 @@ publish = false
 
 [dependencies]
 anyhow = "1.0.95"
-axum = { version = "0.7.9", features = ["macros"] }
+async-trait = "0.1.84"
+axum = { version = "0.8.1", features = ["macros"] }
 futures = "0.3.31"
 google-cloud-auth = { version = "0.17.2", default-features = false, features = ["rustls-tls"] }
 google-cloud-token = "0.1.2"

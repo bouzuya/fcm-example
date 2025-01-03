@@ -17,7 +17,7 @@ struct CreateResponseBody {
     id: String,
 }
 
-async fn create<T: CreateTokenService>(
+async fn create<T: Clone + CreateTokenService + Send + Sync + 'static>(
     State(app): State<T>,
     Json(CreateRequestBody { token }): Json<CreateRequestBody>,
 ) -> Result<Json<CreateResponseBody>, StatusCode> {
@@ -33,7 +33,7 @@ struct DeletePath {
     token_id: String,
 }
 
-async fn delete<T: DeleteTokenService>(
+async fn delete<T: Clone + DeleteTokenService + Send + Sync + 'static>(
     State(app): State<T>,
     Path(DeletePath { token_id }): Path<DeletePath>,
 ) -> Result<StatusCode, StatusCode> {
@@ -47,7 +47,7 @@ pub fn route<T: Clone + CreateTokenService + DeleteTokenService + Send + Sync + 
 ) -> Router<T> {
     Router::new()
         .route("/tokens", routing::post(create::<T>))
-        .route("/tokens/:token_id", routing::delete(delete::<T>))
+        .route("/tokens/{token_id}", routing::delete(delete::<T>))
 }
 
 #[cfg(test)]
@@ -59,14 +59,14 @@ mod tests {
     #[derive(Clone)]
     struct MockApp;
 
-    #[axum::async_trait]
+    #[async_trait::async_trait]
     impl CreateTokenService for MockApp {
         async fn create_token(&self, _token: String) -> anyhow::Result<String> {
             Ok("id34567890".to_owned())
         }
     }
 
-    #[axum::async_trait]
+    #[async_trait::async_trait]
     impl DeleteTokenService for MockApp {
         async fn delete_token(&self, _token_id: String) -> anyhow::Result<()> {
             Ok(())
