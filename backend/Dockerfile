@@ -22,5 +22,5 @@ ENV PORT=3000
 COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/backend /usr/local/bin/backend
 COPY --from=builder /app/public /usr/local/bin/public
 WORKDIR /usr/local/bin
-ENTRYPOINT ["backend"]
+ENTRYPOINT ["/usr/local/bin/backend"]
 
