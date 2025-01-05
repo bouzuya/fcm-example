@@ -1,0 +1,17 @@
+name: fcm-example
+services:
+  backend:
+    image: rust:1.83.0-bookworm
+    tty: true
+    volumes:
+      - backend-data:/app/target
+  frontend:
+    depends_on:
+      - backend
+    image: node:22.12.0-bookworm
+    tty: true
+    volumes:
+      - backend-data:/app/node_modules
+volumes:
+  backend-data:
+  frontend-data:
