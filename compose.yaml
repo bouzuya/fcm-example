@@ -6,7 +6,6 @@ services:
       - ./backend/.env
     tty: true
     volumes:
-      - backend-data:/home/bouzuya/app/backend/target
       - .:/home/bouzuya/app
   frontend:
     depends_on:
@@ -14,8 +13,4 @@ services:
     image: node:22.12.0-bookworm
     tty: true
     volumes:
-      - frontend-data:/app/frontend/node_modules
       - .:/app
-volumes:
-  backend-data:
-  frontend-data:
