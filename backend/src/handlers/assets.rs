@@ -9,5 +9,5 @@ pub fn route() -> axum::Router<App> {
             ServeFile::new("public/firebase-messaging-sw.js"),
         )
         .nest_service("/assets", ServeDir::new("public/assets"))
-        .nest_service("/", ServeFile::new("public/index.html"))
+        .fallback_service(ServeFile::new("public/index.html"))
 }
