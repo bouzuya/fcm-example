@@ -1,0 +1,15 @@
+{
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "GitHub.copilot",
+                "ms-azuretools.vscode-docker"
+            ]
+        }
+    },
+    "dockerComposeFile": "../../compose.yaml",
+    "name": "frontend",
+    "service": "frontend",
+    "shutdownAction": "none",
+    "workspaceFolder": "/home/bouzuya/app/frontend"
+}
