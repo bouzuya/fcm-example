@@ -9,6 +9,8 @@ services:
       - .:/home/bouzuya/app
   frontend:
     build: .devcontainer/frontend/
+    env_file:
+      - ./frontend/.env
     tty: true
     volumes:
       - .:/home/bouzuya/app
